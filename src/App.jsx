@@ -382,12 +382,15 @@ const styles = {
     flexDirection: "column",
     alignItems: "center",
     width: "100%",
+    justifyContent: "center",
   },
   historyTitle: {
     fontSize: "1.5rem",
     fontWeight: "bold",
     color: "#4b0082",
-    marginBottom: "1vh",
+    textAlign: "center",
+    margin: "0 0 1vh 0",
+    width: "100%",
   },
   chart: {
     width: "80vw",
