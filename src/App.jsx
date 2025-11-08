@@ -1,0 +1,312 @@
+import React, { useState, useEffect } from "react";
+
+export default function TravailScreen() {
+  const [isRunning, setIsRunning] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [startTime, setStartTime] = useState(null);
+  const [sessions, setSessions] = useState([]);
+  const [totalToday, setTotalToday] = useState(0);
+  const [goal, setGoal] = useState(480); // Objectif par défaut en minutes (8 heures)
+  const [progress, setProgress] = useState(0);
+  const [motivationalPhrase, setMotivationalPhrase] = useState("");
+
+  const motivationalPhrases = [
+    "Commencez fort !",
+    "Vous êtes sur la bonne voie !",
+    "Continuez, vous êtes incroyable !",
+    "Presque là, tenez bon !",
+    "Bravo, objectif atteint !",
+    "Chaque minute compte, allez-y !",
+    "Faites de votre mieux aujourd'hui !",
+    "La persévérance paie !",
+    "Vous contrôlez votre journée !",
+    "Restez concentré et avancez !"
+  ];
+
+  // Charger les sessions et l'objectif au montage
+  useEffect(() => {
+    const loadData = () => {
+      try {
+        const storedSessions = localStorage.getItem("deepWorkSessions");
+        if (storedSessions) {
+          const parsedSessions = JSON.parse(storedSessions);
+          setSessions(parsedSessions);
+          calculateTotalToday(parsedSessions);
+        }
+        const storedGoal = localStorage.getItem("deepWorkGoal");
+        if (storedGoal) {
+          setGoal(parseFloat(storedGoal));
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement :", error);
+      }
+    };
+    loadData();
+  }, []);
+
+  // Calculer le total du jour et mettre à jour la progression
+  const calculateTotalToday = (sessionsList) => {
+    const today = new Date().toDateString();
+    const todaySessions = sessionsList.filter(session => 
+      new Date(session.date).toDateString() === today
+    );
+    const total = todaySessions.reduce((sum, session) => sum + session.duration, 0);
+    setTotalToday(total);
+    updateProgress(total);
+  };
+
+  // Mettre à jour la progression et la phrase motivante
+  const updateProgress = (total) => {
+    const goalMs = goal * 60000; // Convertir minutes en ms
+    const percentage = Math.min((total / goalMs) * 100, 100);
+    setProgress(percentage);
+    setMotivationalPhrase(getRandomPhrase(percentage));
+  };
+
+  // Sélectionner une phrase motivante basée sur le progrès
+  const getRandomPhrase = (percentage) => {
+    let filteredPhrases;
+    if (percentage < 25) {
+      filteredPhrases = motivationalPhrases.slice(0, 3);
+    } else if (percentage < 75) {
+      filteredPhrases = motivationalPhrases.slice(3, 7);
+    } else {
+      filteredPhrases = motivationalPhrases.slice(7);
+    }
+    return filteredPhrases[Math.floor(Math.random() * filteredPhrases.length)];
+  };
+
+  // Sauvegarder l'objectif
+  const saveGoal = (newGoal) => {
+    setGoal(newGoal);
+    localStorage.setItem("deepWorkGoal", newGoal.toString());
+    updateProgress(totalToday);
+  };
+
+  // Timer pour mettre à jour le temps écoulé
+  useEffect(() => {
+    let interval;
+    if (isRunning) {
+      interval = setInterval(() => {
+        setElapsedTime(Date.now() - startTime);
+      }, 1000);
+    } else {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [isRunning, startTime]);
+
+  // Fonction pour démarrer le chronomètre
+  const startTimer = () => {
+    setStartTime(Date.now() - elapsedTime);
+    setIsRunning(true);
+  };
+
+  // Fonction pour arrêter le chronomètre et sauvegarder
+  const stopTimer = () => {
+    setIsRunning(false);
+    const session = {
+      id: Date.now(),
+      duration: elapsedTime,
+      date: new Date().toISOString(),
+    };
+    const updatedSessions = [...sessions, session];
+    setSessions(updatedSessions);
+    calculateTotalToday(updatedSessions);
+    try {
+      localStorage.setItem("deepWorkSessions", JSON.stringify(updatedSessions));
+      alert(`Session sauvegardée\nTemps travaillé : ${formatTime(elapsedTime)}`);
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde :", error);
+      alert("Erreur : Impossible de sauvegarder la session.");
+    }
+    setElapsedTime(0);
+  };
+
+  // Fonction pour formater le temps (HH:MM:SS)
+  const formatTime = (ms) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+  };
+
+  return (
+    <div style={styles.container}>
+      {/* Fond dégradé violet */}
+      <div style={styles.background}></div>
+      
+      {/* CONTENU */}
+      <div style={styles.content}>
+        {/* Header pour le titre, objectif et total du jour */}
+        <div style={styles.header}>
+          <p style={styles.title}>Deep Work</p>
+          <div style={styles.goalContainer}>
+            <label style={styles.goalLabel}>Objectif quotidien (minutes) :</label>
+            <input
+              type="number"
+              value={goal}
+              onChange={(e) => saveGoal(parseFloat(e.target.value) || 0)}
+              style={styles.goalInput}
+              min="0"
+              step="1"
+            />
+          </div>
+          <p style={styles.totalText}>Total aujourd'hui : {formatTime(totalToday)}</p>
+        </div>
+        
+        {/* Corps centré pour le timer, progression et phrase */}
+        <div style={styles.body}>
+          <div style={styles.timerContainer}>
+            <p style={styles.timerText}>{formatTime(elapsedTime)}</p>
+            <button
+              style={{ ...styles.button, ...(isRunning ? styles.stopButton : styles.startButton) }}
+              onClick={isRunning ? stopTimer : startTimer}
+            >
+              {isRunning ? "Stop" : "Start"}
+            </button>
+            
+            {/* Barre de progression */}
+            <div style={styles.progressContainer}>
+              <div style={{ ...styles.progressBar, width: `${progress}%` }}></div>
+              <p style={styles.progressText}>{Math.round(progress)}% complété</p>
+            </div>
+            
+            {/* Phrase motivante */}
+            <p style={styles.motivationalText}>{motivationalPhrase}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const styles = {
+  container: {
+    position: "relative",
+    height: "100vh",
+    width: "100vw",
+    overflow: "hidden",
+  },
+  background: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    background: "linear-gradient(to bottom, #f4e8ff, #e4d1ff, #d0baff, #b89cff)",
+    zIndex: -1,
+  },
+  content: {
+    display: "flex",
+    flexDirection: "column",
+    height: "100%",
+  },
+  header: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    padding: "2vh 0",
+    borderBottom: "1px solid #b89cff",
+  },
+  title: {
+    fontSize: "4.2rem",
+    fontWeight: "bold",
+    color: "#4b0082",
+    textAlign: "center",
+    margin: 0,
+  },
+  goalContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    margin: "1vh 0",
+  },
+  goalLabel: {
+    fontSize: "1.5rem",
+    color: "#4b0082",
+    marginBottom: "0.5vh",
+  },
+  goalInput: {
+    fontSize: "1.5rem",
+    padding: "0.5vh",
+    border: "1px solid #b89cff",
+    borderRadius: "5px",
+    textAlign: "center",
+    width: "10vw",
+    minWidth: "80px",
+  },
+  totalText: {
+    fontSize: "2rem",
+    color: "#4b0082",
+    textAlign: "center",
+    margin: "1vh 0 0 0",
+  },
+  body: {
+    flex: 1,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  timerContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+  timerText: {
+    fontSize: "6rem",
+    fontWeight: "bold",
+    color: "#4b0082",
+    margin: "0 0 3vh 0",
+  },
+  button: {
+    padding: "2vh 10vw",
+    borderRadius: "25px",
+    border: "none",
+    cursor: "pointer",
+    fontSize: "2.5rem",
+    fontWeight: "bold",
+    color: "#ffffff",
+    marginBottom: "3vh",
+  },
+  startButton: {
+    backgroundColor: "#4b0082",
+  },
+  stopButton: {
+    backgroundColor: "#ff4500",
+  },
+  progressContainer: {
+    width: "80vw",
+    maxWidth: "400px",
+    height: "4vh",
+    backgroundColor: "#e4d1ff",
+    borderRadius: "10px",
+    overflow: "hidden",
+    marginBottom: "2vh",
+    position: "relative",
+  },
+  progressBar: {
+    height: "100%",
+    backgroundColor: "#4b0082",
+    transition: "width 0.5s ease",
+  },
+  progressText: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    fontSize: "1.5rem",
+    fontWeight: "bold",
+    color: "#ffffff",
+    margin: 0,
+  },
+  motivationalText: {
+    fontSize: "2rem",
+    fontWeight: "bold",
+    color: "#4b0082",
+    textAlign: "center",
+    margin: "2vh 0 0 0",
+    fontStyle: "italic",
+  },
+};
