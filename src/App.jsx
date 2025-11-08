@@ -9,6 +9,7 @@ export default function TravailScreen() {
   const [goal, setGoal] = useState(480); // Objectif par défaut en minutes (8 heures)
   const [progress, setProgress] = useState(0);
   const [motivationalPhrase, setMotivationalPhrase] = useState("");
+  const [showHistory, setShowHistory] = useState(false); // État pour afficher l'historique
 
   const motivationalPhrases = [
     "Personne ne viendra te sauver. Bouge-toi.",
@@ -25,7 +26,6 @@ export default function TravailScreen() {
     "Personne ne te doit rien. Gagne-le.",
     "Tu veux la liberté ? Discipline-toi maintenant.",
   ];
-
 
   // Charger les sessions et l'objectif au montage
   useEffect(() => {
@@ -136,6 +136,28 @@ export default function TravailScreen() {
     return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
   };
 
+  // Préparer les données pour le graphe (7 derniers jours)
+  const getChartData = () => {
+    const data = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateString = date.toDateString();
+      const daySessions = sessions.filter(session => 
+        new Date(session.date).toDateString() === dateString
+      );
+      const totalHours = daySessions.reduce((sum, session) => sum + session.duration, 0) / 3600000; // En heures
+      data.push({
+        day: date.toLocaleDateString('fr-FR', { weekday: 'short' }), // Jour abrégé
+        hours: totalHours,
+      });
+    }
+    return data;
+  };
+
+  const chartData = getChartData();
+  const maxHours = Math.max(...chartData.map(d => d.hours), 1); // Pour normaliser les barres
+
   return (
     <div style={styles.container}>
       {/* Fond dégradé violet */}
@@ -158,28 +180,59 @@ export default function TravailScreen() {
             />
           </div>
           <p style={styles.totalText}>Total aujourd'hui : {formatTime(totalToday)}</p>
+          <button style={styles.historyButton} onClick={() => setShowHistory(!showHistory)}>
+            {showHistory ? "Fermer Historique" : "Voir Historique"}
+          </button>
         </div>
         
-        {/* Corps centré pour le timer, progression et phrase */}
+        {/* Corps centré pour le timer, progression et phrase ou historique */}
         <div style={styles.body}>
-          <div style={styles.timerContainer}>
-            <p style={styles.timerText}>{formatTime(elapsedTime)}</p>
-            <button
-              style={{ ...styles.button, ...(isRunning ? styles.stopButton : styles.startButton) }}
-              onClick={isRunning ? stopTimer : startTimer}
-            >
-              {isRunning ? "Stop" : "Start"}
-            </button>
-            
-            {/* Barre de progression */}
-            <div style={styles.progressContainer}>
-              <div style={{ ...styles.progressBar, width: `${progress}%` }}></div>
-              <p style={styles.progressText}>{Math.round(progress)}% complété</p>
+          {showHistory ? (
+            <div style={styles.historyContainer}>
+              <p style={styles.historyTitle}>Historique des 7 derniers jours (heures)</p>
+              <svg style={styles.chart} viewBox="0 0 350 200">
+                {chartData.map((data, index) => {
+                  const barHeight = (data.hours / maxHours) * 150; // Hauteur proportionnelle
+                  return (
+                    <g key={index}>
+                      <rect
+                        x={index * 45 + 20}
+                        y={180 - barHeight}
+                        width="30"
+                        height={barHeight}
+                        fill="#4b0082"
+                      />
+                      <text x={index * 45 + 35} y={195} textAnchor="middle" fontSize="10" fill="#4b0082">
+                        {data.day}
+                      </text>
+                      <text x={index * 45 + 35} y={180 - barHeight - 5} textAnchor="middle" fontSize="10" fill="#4b0082">
+                        {data.hours.toFixed(1)}
+                      </text>
+                    </g>
+                  );
+                })}
+              </svg>
             </div>
-            
-            {/* Phrase motivante */}
-            <p style={styles.motivationalText}>{motivationalPhrase}</p>
-          </div>
+          ) : (
+            <div style={styles.timerContainer}>
+              <p style={styles.timerText}>{formatTime(elapsedTime)}</p>
+              <button
+                style={{ ...styles.button, ...(isRunning ? styles.stopButton : styles.startButton) }}
+                onClick={isRunning ? stopTimer : startTimer}
+              >
+                {isRunning ? "Stop" : "Start"}
+              </button>
+              
+              {/* Barre de progression */}
+              <div style={styles.progressContainer}>
+                <div style={{ ...styles.progressBar, width: `${progress}%` }}></div>
+                <p style={styles.progressText}>{Math.round(progress)}% complété</p>
+              </div>
+              
+              {/* Phrase motivante */}
+              <p style={styles.motivationalText}>{motivationalPhrase}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -247,6 +300,16 @@ const styles = {
     textAlign: "center",
     margin: "0.5vh 0 0 0",
   },
+  historyButton: {
+    marginTop: "0.5vh",
+    padding: "0.5vh 2vw",
+    borderRadius: "10px",
+    border: "none",
+    backgroundColor: "#4b0082",
+    color: "#ffffff",
+    fontSize: "1rem",
+    cursor: "pointer",
+  },
   body: {
     flex: 1,
     display: "flex",
@@ -313,5 +376,22 @@ const styles = {
     textAlign: "center",
     margin: "0.5vh 0 0 0", // Réduit
     fontStyle: "italic",
+  },
+  historyContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    width: "100%",
+  },
+  historyTitle: {
+    fontSize: "1.5rem",
+    fontWeight: "bold",
+    color: "#4b0082",
+    marginBottom: "1vh",
+  },
+  chart: {
+    width: "80vw",
+    maxWidth: "350px",
+    height: "200px",
   },
 };
