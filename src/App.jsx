@@ -11,17 +11,21 @@ export default function TravailScreen() {
   const [motivationalPhrase, setMotivationalPhrase] = useState("");
 
   const motivationalPhrases = [
-    "Commencez fort !",
-    "Vous êtes sur la bonne voie !",
-    "Continuez, vous êtes incroyable !",
-    "Presque là, tenez bon !",
-    "Bravo, objectif atteint !",
-    "Chaque minute compte, allez-y !",
-    "Faites de votre mieux aujourd'hui !",
-    "La persévérance paie !",
-    "Vous contrôlez votre journée !",
-    "Restez concentré et avancez !"
+    "Personne ne viendra te sauver. Bouge-toi.",
+    "Tu veux des résultats ? Alors fais ce que 99% ne font pas.",
+    "Arrête d’attendre d’être motivé. Agis.",
+    "Tu n’es pas fatigué. Tu es juste habitué à abandonner.",
+    "Chaque seconde où tu hésites, quelqu'un devient meilleur que toi.",
+    "Moins de paroles. Plus d’action.",
+    "Tu dis vouloir une meilleure vie, prouve-le.",
+    "Si c’était facile, tout le monde le ferait.",
+    "Ton futur toi te dira merci ou te détestera. Choisis.",
+    "Le confort détruit les rêves. La discipline les construit.",
+    "Ta vie actuelle est le résultat des choix que TU as faits.",
+    "Personne ne te doit rien. Gagne-le.",
+    "Tu veux la liberté ? Discipline-toi maintenant.",
   ];
+
 
   // Charger les sessions et l'objectif au montage
   useEffect(() => {
@@ -187,7 +191,7 @@ const styles = {
     position: "relative",
     height: "100vh",
     width: "100vw",
-    overflow: "hidden",
+    overflow: "hidden", // Empêche le scroll
   },
   background: {
     position: "absolute",
@@ -207,11 +211,11 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    padding: "2vh 0",
+    padding: "1vh 0", // Réduit
     borderBottom: "1px solid #b89cff",
   },
   title: {
-    fontSize: "4.2rem",
+    fontSize: "2.5rem", // Réduit de 4.2rem à 2.5rem
     fontWeight: "bold",
     color: "#4b0082",
     textAlign: "center",
@@ -221,27 +225,27 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    margin: "1vh 0",
+    margin: "0.5vh 0", // Réduit
   },
   goalLabel: {
-    fontSize: "1.5rem",
+    fontSize: "1rem", // Réduit
     color: "#4b0082",
-    marginBottom: "0.5vh",
+    marginBottom: "0.25vh",
   },
   goalInput: {
-    fontSize: "1.5rem",
-    padding: "0.5vh",
+    fontSize: "1rem", // Réduit
+    padding: "0.25vh",
     border: "1px solid #b89cff",
     borderRadius: "5px",
     textAlign: "center",
-    width: "10vw",
-    minWidth: "80px",
+    width: "15vw",
+    minWidth: "60px",
   },
   totalText: {
-    fontSize: "2rem",
+    fontSize: "1.2rem", // Réduit
     color: "#4b0082",
     textAlign: "center",
-    margin: "1vh 0 0 0",
+    margin: "0.5vh 0 0 0",
   },
   body: {
     flex: 1,
@@ -253,22 +257,23 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    width: "100%",
   },
   timerText: {
-    fontSize: "6rem",
+    fontSize: "3.5rem", // Réduit de 6rem à 3.5rem
     fontWeight: "bold",
     color: "#4b0082",
-    margin: "0 0 3vh 0",
+    margin: "0 0 1vh 0", // Réduit
   },
   button: {
-    padding: "2vh 10vw",
+    padding: "1vh 8vw", // Réduit
     borderRadius: "25px",
     border: "none",
     cursor: "pointer",
-    fontSize: "2.5rem",
+    fontSize: "1.5rem", // Réduit
     fontWeight: "bold",
     color: "#ffffff",
-    marginBottom: "3vh",
+    marginBottom: "1vh", // Réduit
   },
   startButton: {
     backgroundColor: "#4b0082",
@@ -277,13 +282,13 @@ const styles = {
     backgroundColor: "#ff4500",
   },
   progressContainer: {
-    width: "80vw",
-    maxWidth: "400px",
-    height: "4vh",
+    width: "70vw", // Réduit
+    maxWidth: "300px",
+    height: "3vh", // Réduit
     backgroundColor: "#e4d1ff",
     borderRadius: "10px",
     overflow: "hidden",
-    marginBottom: "2vh",
+    marginBottom: "1vh", // Réduit
     position: "relative",
   },
   progressBar: {
@@ -296,17 +301,17 @@ const styles = {
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
-    fontSize: "1.5rem",
+    fontSize: "1rem", // Réduit
     fontWeight: "bold",
     color: "#ffffff",
     margin: 0,
   },
   motivationalText: {
-    fontSize: "2rem",
+    fontSize: "1.2rem", // Réduit
     fontWeight: "bold",
     color: "#4b0082",
     textAlign: "center",
-    margin: "2vh 0 0 0",
+    margin: "0.5vh 0 0 0", // Réduit
     fontStyle: "italic",
   },
 };
