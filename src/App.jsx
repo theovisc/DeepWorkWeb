@@ -1,16 +1,6 @@
 import React, { useState, useEffect } from "react";
 
 export default function TravailScreen() {
-  const [isRunning, setIsRunning] = useState(false);
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [startTime, setStartTime] = useState(null);
-  const [sessions, setSessions] = useState([]);
-  const [totalToday, setTotalToday] = useState(0);
-  const [goal, setGoal] = useState(480); // Objectif par défaut en minutes (8 heures)
-  const [progress, setProgress] = useState(0);
-  const [motivationalPhrase, setMotivationalPhrase] = useState("");
-  const [showHistory, setShowHistory] = useState(false); // État pour afficher l'historique
-
   const motivationalPhrases = [
     "Personne ne viendra te sauver. Bouge-toi.",
     "Tu veux des résultats ? Alors fais ce que 99% ne font pas.",
@@ -26,6 +16,29 @@ export default function TravailScreen() {
     "Personne ne te doit rien. Gagne-le.",
     "Tu veux la liberté ? Discipline-toi maintenant.",
   ];
+
+  // Fonction pour sélectionner une phrase motivante (déplacée ici)
+  const getRandomPhrase = (percentage) => {
+    let filteredPhrases;
+    if (percentage < 25) {
+      filteredPhrases = motivationalPhrases.slice(0, 3);
+    } else if (percentage < 75) {
+      filteredPhrases = motivationalPhrases.slice(3, 7);
+    } else {
+      filteredPhrases = motivationalPhrases.slice(7);
+    }
+    return filteredPhrases[Math.floor(Math.random() * filteredPhrases.length)];
+  };
+
+  const [isRunning, setIsRunning] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [startTime, setStartTime] = useState(null);
+  const [sessions, setSessions] = useState([]);
+  const [totalToday, setTotalToday] = useState(0);
+  const [goal, setGoal] = useState(480); // Objectif par défaut en minutes (8 heures)
+  const [progress, setProgress] = useState(0);
+  const [motivationalPhrase, setMotivationalPhrase] = useState(() => getRandomPhrase(0)); // Maintenant accessible
+  const [showHistory, setShowHistory] = useState(false); // État pour afficher l'historique
 
   // Charger les sessions et l'objectif au montage
   useEffect(() => {
@@ -65,19 +78,6 @@ export default function TravailScreen() {
     const percentage = Math.min((total / goalMs) * 100, 100);
     setProgress(percentage);
     setMotivationalPhrase(getRandomPhrase(percentage));
-  };
-
-  // Sélectionner une phrase motivante basée sur le progrès
-  const getRandomPhrase = (percentage) => {
-    let filteredPhrases;
-    if (percentage < 25) {
-      filteredPhrases = motivationalPhrases.slice(0, 3);
-    } else if (percentage < 75) {
-      filteredPhrases = motivationalPhrases.slice(3, 7);
-    } else {
-      filteredPhrases = motivationalPhrases.slice(7);
-    }
-    return filteredPhrases[Math.floor(Math.random() * filteredPhrases.length)];
   };
 
   // Sauvegarder l'objectif
